@@ -33,4 +33,4 @@ git push
 
 ## Team
 
-Aaron, Yifei, Kevin
+Aaron Zhong, Yifei Xie, Kevin M Simiyu
