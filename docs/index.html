@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LSS Prognostic Models: Project Management Plan and Progress</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --ring: rgba(11,11,11,0.10);
+    --tint: #f0efec;
+
+    --aaron: #2a78d6;
+    --yifei: #eb6834;
+    --kevin: #1baf7a;
+    --all:   #898781;
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+    --today: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --ink: #f0efec;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --axis: #383835;
+      --ring: rgba(255,255,255,0.10);
+      --tint: #262624;
+      --aaron: #3987e5;
+      --yifei: #d95926;
+      --kevin: #199e70;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 20px 64px; }
+
+  header h1 { font-size: 26px; line-height: 1.25; margin: 0 0 4px; }
+  header .sub { color: var(--ink-2); font-size: 16px; margin: 0 0 14px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--ink-2); font-size: 14px; }
+  .meta b { color: var(--ink); font-weight: 600; }
+
+  nav {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--page);
+    border-bottom: 1px solid var(--grid);
+    margin: 20px -20px 24px; padding: 10px 20px;
+    display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 14px;
+  }
+  nav a { color: var(--ink-2); text-decoration: none; }
+  nav a:hover { color: var(--ink); text-decoration: underline; }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--ring);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+  h2 { font-size: 19px; margin: 0 0 14px; }
+  h2 .num { color: var(--muted); font-weight: 500; margin-right: 6px; }
+  h3 { font-size: 15px; margin: 18px 0 6px; }
+  p { margin: 0 0 10px; }
+  ul { margin: 0 0 6px; padding-left: 20px; }
+  li { margin: 2px 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+  th { color: var(--ink-2); font-weight: 600; font-size: 13px; }
+  td.c, th.c { text-align: center; }
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  /* Owner chips */
+  .owner { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .o-aaron { --oc: var(--aaron); }
+  .o-yifei { --oc: var(--yifei); }
+  .o-kevin { --oc: var(--kevin); }
+  .o-all   { --oc: var(--all); }
+  .dot { background: var(--oc); }
+
+  /* Status chips */
+  .status { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; color: var(--ink-2); }
+  .status .ic {
+    width: 16px; height: 16px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; line-height: 1; flex: none;
+  }
+  .s-done .ic { background: var(--good); color: #fff; }
+  .s-in-progress .ic { background: var(--warning); color: #0b0b0b; }
+  .s-not-started .ic { border: 1.5px solid var(--muted); }
+  .s-none .ic { border: 1.5px dashed var(--muted); color: var(--muted); }
+  .late { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--critical); white-space: nowrap; }
+  .late .ic { width: 14px; height: 14px; border-radius: 50%; background: var(--critical); color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+  .stack { display: flex; flex-direction: column; gap: 2px; }
+
+  /* Summary */
+  .notice {
+    border: 1px dashed var(--axis); border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 16px; color: var(--ink-2); font-size: 14px;
+  }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .tile { border: 1px solid var(--ring); border-radius: 10px; padding: 12px 14px; }
+  .tile .lbl { font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+  .tile .val { font-size: 28px; font-weight: 600; margin-top: 2px; }
+  .bars-owner { display: grid; gap: 10px; }
+  .bo-row { display: grid; grid-template-columns: 90px 1fr 110px; align-items: center; gap: 12px; font-size: 14px; }
+  .bo-track { height: 12px; background: var(--tint); border-radius: 4px; overflow: hidden; display: flex; gap: 2px; }
+  .bo-fill { height: 100%; }
+  .bo-fill.done { background: var(--oc); }
+  .bo-fill.prog { background: repeating-linear-gradient(45deg, var(--oc) 0 4px, transparent 4px 7px); }
+  .bo-row .cnt { color: var(--ink-2); font-size: 13px; text-align: right; }
+
+  /* Roles */
+  .role-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 18px; }
+  .role-card { border: 1px solid var(--ring); border-left: 5px solid var(--oc); border-radius: 10px; padding: 14px 16px; }
+  .role-card .name { font-weight: 600; font-size: 16px; }
+  .role-card .role { color: var(--ink-2); font-size: 13px; margin-bottom: 8px; }
+  .role-card ul { font-size: 14px; }
+
+  .raci td.cell { text-align: center; }
+  .raci-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 24px; padding: 0 8px; border-radius: 6px; font-weight: 700; font-size: 13px;
+  }
+  .raci-R { background: var(--oc); color: #fff; }
+  .raci-C { background: color-mix(in srgb, var(--oc) 22%, transparent); color: var(--ink); }
+  .raci-I { border: 1.5px solid color-mix(in srgb, var(--oc) 60%, transparent); color: var(--ink-2); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--ink-2); margin: 10px 0 0; align-items: center; }
+  .legend .raci-chip { min-width: 26px; height: 20px; font-size: 12px; }
+
+  /* Gantt */
+  .gantt-scroll { overflow-x: auto; }
+  .gantt { min-width: 960px; font-size: 13.5px; }
+  .g-row {
+    display: grid;
+    grid-template-columns: 34px minmax(250px, 1.6fr) 92px 150px repeat(12, minmax(30px, 1fr));
+    align-items: center;
+    min-height: 34px;
+    position: relative;
+  }
+  .g-row > .lab { padding: 6px 8px 6px 0; }
+  .g-row .idx { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .g-head { color: var(--ink-2); font-weight: 600; font-size: 12.5px; border-bottom: 1px solid var(--axis); min-height: 30px; }
+  .g-head .wk { text-align: center; font-variant-numeric: tabular-nums; }
+  .g-group { font-weight: 600; font-size: 13px; color: var(--ink); padding-top: 10px; min-height: 30px; }
+  .g-group > div { grid-column: 1 / -1; }
+  .g-task { border-bottom: 1px solid var(--grid); }
+  .g-cell { height: 100%; border-left: 1px solid var(--grid); grid-row: 1; }
+  .g-bar {
+    grid-row: 1;
+    height: 16px; margin: 0 2px; border-radius: 4px;
+    background: var(--oc);
+    position: relative; z-index: 1; cursor: default;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 11px; font-weight: 700;
+  }
+  .g-bar.st-in-progress { background: repeating-linear-gradient(45deg, var(--oc) 0 6px, color-mix(in srgb, var(--oc) 55%, transparent) 6px 10px); }
+  .g-bar.st-not-started { background: color-mix(in srgb, var(--oc) 28%, transparent); box-shadow: inset 0 0 0 1.5px var(--oc); }
+  .g-today {
+    grid-row: 1; height: 100%; width: 0; justify-self: center;
+    border-left: 2px solid var(--today); z-index: 2; pointer-events: none;
+  }
+  .g-today-lbl { color: var(--today); font-weight: 700; }
+  .gantt-legend { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 14px; font-size: 13px; color: var(--ink-2); align-items: center; }
+  .sw { display: inline-block; width: 26px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 6px; }
+
+  .rating { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; }
+  .rating .ic { width: 10px; height: 10px; border-radius: 2px; }
+  .r-high .ic { background: var(--critical); }
+  .r-medium .ic { background: var(--warning); }
+
+  .small { font-size: 13px; color: var(--ink-2); }
+
+  #tip {
+    position: fixed; z-index: 20; pointer-events: none;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--ring); border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    padding: 8px 10px; font-size: 13px; line-height: 1.45;
+    opacity: 0; transition: opacity .08s;
+    max-width: 300px;
+  }
+  #tip b { display: block; margin-bottom: 2px; }
+
+  @media print {
+    nav { position: static; }
+    section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<script>
+/* ==================================================================
+   UPDATE PROGRESS HERE (this is the only block you need to edit)
+
+   STATUS values:  "done" | "in-progress" | "not-started" | ""
+   ""  means the team has not reported a status for that task yet.
+   CURRENT_WEEK:   project week number (1 to 12) to draw the "today"
+                   line on the schedule, or null to hide it.
+   DONE_WEEK:      optional, the week a task was actually finished.
+   ================================================================== */
+const LAST_UPDATED = "2026-11-11";
+const CURRENT_WEEK = 7;
+const STATUS = {
+   1: "done",   // SAP sign-off
+   2: "not-started",   // Data access
+   3: "not-started",   // Code repository set up
+   4: "done",   // Confirm additional predictors with Dr. Rundell
+   5: "not-started",   // Build analysis dataset
+   6: "not-started",   // Table 1
+   7: "not-started",   // Table 2
+   8: "not-started",   // Missingness summary
+   9: "not-started",   // Imputation pipeline
+  10: "not-started",   // Imputation convergence check
+  11: "not-started",   // BI-SS small test runs
+  12: "not-started",   // Primary model: SSSQ
+  13: "not-started",   // Primary model: ODI
+  14: "not-started",   // Primary model: GRC
+  15: "not-started",   // Internal validation performance
+  16: "not-started",   // Bootstrap optimism correction
+  17: "not-started",   // Sensitivity analyses
+  18: "not-started",   // Final tables and figures
+  19: "not-started",   // Draft report
+  20: "not-started",   // Final report
+  21: "not-started",   // TRIPOD+AI checklist
+  22: "not-started",   // Code and session information archive
+  23: "not-started",   // Lessons-learned meeting
+};
+const DONE_WEEK = {
+   1: 4,    // SAP sign-off finished in week 4
+   4: 6,    // Predictors confirmed in week 6
+};
+/* ================================================================== */
+</script>
+
+<div class="wrap">
+  <header>
+    <h1>BIOST 596 Project Management Plan</h1>
+    <p class="sub">Development and internal validation of prognostic models for spinal stenosis outcomes</p>
+    <div class="meta">
+      <span><b>Team:</b> Aaron, Yifei Xie, Kevin M Simiyu</span>
+      <span><b>Plan date:</b> November 11, 2026</span>
+      <span><b>Progress last updated:</b> <span id="lastUpdated"></span></span>
+      <span><b>Current week:</b> <span id="curWeek"></span></span>
+    </div>
+  </header>
+
+  <nav>
+    <a href="#progress">Progress</a>
+    <a href="#overview">1 Overview</a>
+    <a href="#scope">2 Scope</a>
+    <a href="#team">3 Team and roles</a>
+    <a href="#schedule">4 Deliverables and schedule</a>
+    <a href="#resources">5 Resources</a>
+    <a href="#quality">6 Quality</a>
+    <a href="#communication">7 Communication</a>
+    <a href="#risks">8 Risks</a>
+    <a href="#change">9 Change control</a>
+  </nav>
+
+  <!-- Progress summary -->
+  <section id="progress">
+    <h2>Progress at a glance</h2>
+    <div id="notice" class="notice" hidden></div>
+    <div class="tiles" id="tiles"></div>
+    <h3>Tasks done by owner</h3>
+    <div class="bars-owner" id="ownerBars"></div>
+    <div class="legend">
+      <span><span class="sw" style="background:var(--muted)"></span>Done</span>
+      <span><span class="sw" style="background:repeating-linear-gradient(45deg,var(--muted) 0 4px,transparent 4px 7px)"></span>In progress</span>
+    </div>
+  </section>
+
+  <!-- 1 -->
+  <section id="overview">
+    <h2><span class="num">1</span>Overview and objectives</h2>
+    <p>Treatment decisions for lumbar spinal stenosis (LSS) are uncertain, and most existing prognostic models were developed in surgical cohorts. Using the PROSPECTS cohort, this 12-week project will develop and internally validate models that predict 12-month outcomes in adults aged 50 and over who are starting non-surgical care, as specified in the Statistical Analysis Plan (SAP). Three outcomes will be modelled separately: Swiss Spinal Stenosis Questionnaire (SSSQ) symptom severity, Oswestry Disability Index (ODI) and Global Rating of Change (GRC).</p>
+    <h3>Success criteria</h3>
+    <ul>
+      <li>Complete all analyses specified in the SAP for the three outcomes.</li>
+      <li>Report validation performance with 95% confidence intervals.</li>
+      <li>Make the full analysis reproducible, from raw data to final tables.</li>
+      <li>Complete the final report and the required TRIPOD+AI and STROBE checklists by week 12.</li>
+    </ul>
+    <h3>Assumptions and constraints</h3>
+    <ul>
+      <li>Three members, about 10 hours per member per week.</li>
+      <li>Data are available in week 1 (development n = 443; validation n = 111).</li>
+      <li>Additional predictors will be confirmed with Dr. Rundell.</li>
+      <li>BI-SS and the optimism-corrected bootstrap (200 replicates) may require substantial computing time.</li>
+    </ul>
+  </section>
+
+  <!-- 2 -->
+  <section id="scope">
+    <h2><span class="num">2</span>Scope</h2>
+    <p><b>In scope:</b> descriptive analyses, multiple imputation, BI-SS group LASSO with ridge refit, internal validation, bootstrap optimism correction, sensitivity analyses, tables, figures and the final report.</p>
+    <p><b>Out of scope:</b> new data collection; external validation; surgical outcomes; a clinical decision tool; alternative primary modelling approaches; and outcomes other than SSSQ, ODI and GRC.</p>
+  </section>
+
+  <!-- 3 -->
+  <section id="team">
+    <h2><span class="num">3</span>Team, roles and stakeholders</h2>
+    <div class="role-cards">
+      <div class="role-card o-aaron">
+        <div class="name owner"><span class="dot"></span>Aaron</div>
+        <div class="role">Project lead; data and descriptive analyses</div>
+        <ul><li>Schedule and status notes</li><li>Data preparation</li><li>Tables 1–2 and missingness summary</li><li>Report integration</li></ul>
+      </div>
+      <div class="role-card o-yifei">
+        <div class="name owner"><span class="dot"></span>Yifei</div>
+        <div class="role">Modelling lead</div>
+        <ul><li>Imputation</li><li>BI-SS group LASSO</li><li>Ridge refit</li><li>Tuning</li></ul>
+      </div>
+      <div class="role-card o-kevin">
+        <div class="name owner"><span class="dot"></span>Kevin</div>
+        <div class="role">Validation lead</div>
+        <ul><li>Internal validation and performance</li><li>Bootstrap optimism correction</li><li>Sensitivity analyses</li></ul>
+      </div>
+    </div>
+
+    <h3>Responsibility</h3>
+    <table class="raci">
+      <thead><tr><th>Task</th>
+        <th class="c"><span class="owner o-aaron"><span class="dot"></span>Aaron</span></th>
+        <th class="c"><span class="owner o-yifei"><span class="dot"></span>Yifei</span></th>
+        <th class="c"><span class="owner o-kevin"><span class="dot"></span>Kevin</span></th></tr></thead>
+      <tbody id="raciBody"></tbody>
+    </table>
+    <div class="legend">
+      <span class="o-all"><span class="raci-chip raci-R">R</span> Responsible</span>
+      <span class="o-all"><span class="raci-chip raci-C">C</span> Consulted</span>
+      <span class="o-all"><span class="raci-chip raci-I">I</span> Informed</span>
+    </div>
+
+    <h3>Stakeholders</h3>
+    <ul>
+      <li>Prof. Robin Mejia, course instructor (assessment)</li>
+      <li>Dr. Sean Rundell, project sponsor (predictor confirmation)</li>
+    </ul>
+  </section>
+
+  <!-- 4 -->
+  <section id="schedule">
+    <h2><span class="num">4</span>Deliverables and schedule</h2>
+    <table>
+      <thead><tr><th style="width:56px">No.</th><th>Deliverable / milestone</th><th style="width:150px">Status</th></tr></thead>
+      <tbody id="delivBody"></tbody>
+    </table>
+    <p class="small" style="margin-top:8px">Deliverable status is derived from its tasks below: done when all its tasks are done, in progress when any have started.</p>
+
+    <h3 style="margin-top:22px">Schedule</h3>
+    <div class="gantt-scroll"><div class="gantt" id="gantt"></div></div>
+    <div class="gantt-legend">
+      <span class="owner o-aaron"><span class="dot"></span>Aaron</span>
+      <span class="owner o-yifei"><span class="dot"></span>Yifei</span>
+      <span class="owner o-kevin"><span class="dot"></span>Kevin</span>
+      <span class="owner o-all"><span class="dot"></span>All</span>
+      <span style="margin-left:8px"><span class="sw" style="background:var(--muted);color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:12px">✓</span>Done</span>
+      <span><span class="sw" style="background:repeating-linear-gradient(45deg,var(--muted) 0 6px,color-mix(in srgb,var(--muted) 55%,transparent) 6px 10px)"></span>In progress</span>
+      <span><span class="sw" style="background:color-mix(in srgb,var(--muted) 28%,transparent);box-shadow:inset 0 0 0 1.5px var(--muted)"></span>Not started</span>
+      <span><span class="sw" style="background:var(--muted)"></span>Status not reported (plain bar)</span>
+      <span><span class="sw" style="width:2px;background:var(--today)"></span>Current week</span>
+    </div>
+
+    <h3>Dependencies</h3>
+    <p>The primary models depend on the analysis dataset and imputation pipeline. Internal validation uses the completed primary-model pipeline and the prespecified development and validation samples. Sensitivity analyses and final tables depend on the validation results.</p>
+  </section>
+
+  <!-- 5 -->
+  <section id="resources">
+    <h2><span class="num">5</span>Resources</h2>
+    <ul>
+      <li><b>Software:</b> R (<code>mice</code>, <code>grpreg</code>, <code>glmnet</code>, <code>ranger</code>, <code>xgboost</code>, <code>rms</code>, <code>pROC</code>) and a shared code repository.</li>
+      <li><b>Computing and budget:</b> UW computing cluster for the bootstrap steps; no direct costs.</li>
+    </ul>
+  </section>
+
+  <!-- 6 -->
+  <section id="quality">
+    <h2><span class="num">6</span>Quality management</h2>
+    <ul>
+      <li>Each script is reviewed by a second member before its results are used.</li>
+      <li>Fixed random seeds are used and package versions are recorded.</li>
+      <li>Imputation convergence is checked with trace plots.</li>
+      <li>The validation procedure is fixed before modelling, and validation results are not used for tuning or model selection.</li>
+      <li>Deviations from the SAP are logged and reported.</li>
+    </ul>
+  </section>
+
+  <!-- 7 -->
+  <section id="communication">
+    <h2><span class="num">7</span>Communication</h2>
+    <table>
+      <thead><tr><th>Activity</th><th>Frequency</th><th>Content</th></tr></thead>
+      <tbody>
+        <tr><td>Team meeting</td><td>Weekly, 45 minutes</td><td>Progress, blockers, next tasks</td></tr>
+        <tr><td>Check-in</td><td>Mid-week, 30 minutes</td><td>Quick status and code questions</td></tr>
+        <tr><td>Status note</td><td>Weekly</td><td>Done, next, risks and issues (prepared by Aaron)</td></tr>
+        <tr><td>Meetings with instructor and sponsor</td><td>Once or twice a month</td><td>Progress and questions</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 8 -->
+  <section id="risks">
+    <h2><span class="num">8</span>Risks</h2>
+    <table>
+      <thead><tr><th>Risk</th><th style="width:100px">Rating</th><th>Response</th><th style="width:90px">Owner</th></tr></thead>
+      <tbody>
+        <tr><td>Long run times for BI-SS and the optimism bootstrap</td><td><span class="rating r-high"><span class="ic"></span>High</span></td><td>Run small test jobs early, parallelize where appropriate, save intermediate results, and begin full bootstrap runs by week 7.</td><td><span class="owner o-yifei"><span class="dot"></span>Yifei</span></td></tr>
+        <tr><td>Delay in data access or predictor confirmation</td><td><span class="rating r-medium"><span class="ic"></span>Medium</span></td><td>Request access in week 1; start with the existing predictor list.</td><td><span class="owner o-aaron"><span class="dot"></span>Aaron</span></td></tr>
+        <tr><td>Team member unavailable</td><td><span class="rating r-medium"><span class="ic"></span>Medium</span></td><td>Cross-train through code review; use the buffer in weeks 11–12.</td><td><span class="owner o-aaron"><span class="dot"></span>Aaron</span></td></tr>
+        <tr><td>Small validation sample and few GRC events</td><td><span class="rating r-high"><span class="ic"></span>High</span></td><td>Report uncertainty clearly and conduct the prespecified bootstrap sensitivity analysis.</td><td><span class="owner o-kevin"><span class="dot"></span>Kevin</span></td></tr>
+        <tr><td>Coding errors or data leakage</td><td><span class="rating r-medium"><span class="ic"></span>Medium</span></td><td>Code review; fix the validation procedure before modelling.</td><td><span class="owner o-kevin"><span class="dot"></span>Kevin</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 9 -->
+  <section id="change">
+    <h2><span class="num">9</span>Change control and closure</h2>
+    <p>Any proposed change to scope, schedule or the SAP is submitted in writing and reviewed at the weekly meeting. Changes that affect the SAP also require the instructor's approval. Every change is logged with its date and reason.</p>
+    <p>At closure, the team reviews the final report and checklists, archives the code and session information, and holds a short lessons-learned meeting.</p>
+  </section>
+</div>
+
+<div id="tip" role="tooltip"></div>
+
+<script>
+/* ---------- Fixed plan content (from the PMP) ---------- */
+const OWNERS = {
+  aaron: "Aaron", yifei: "Yifei", kevin: "Kevin", all: "All"
+};
+
+const GROUPS = [
+  { name: "Initiation, data access, SAP sign-off", tasks: [
+    { id: 1,  name: "SAP sign-off", owner: "all", w: [1, 1] },
+    { id: 2,  name: "Data access", owner: "aaron", w: [1, 1] },
+    { id: 3,  name: "Code repository set up", owner: "aaron", w: [1, 1] },
+    { id: 4,  name: "Confirm additional predictors with Dr. Rundell", owner: "aaron", w: [1, 1] },
+  ]},
+  { name: "Data preparation, descriptive analyses", tasks: [
+    { id: 5,  name: "Build analysis dataset", owner: "aaron", w: [1, 3] },
+    { id: 6,  name: "Table 1", owner: "aaron", w: [1, 3] },
+    { id: 7,  name: "Table 2", owner: "aaron", w: [1, 3] },
+    { id: 8,  name: "Missingness summary", owner: "aaron", w: [1, 3] },
+  ]},
+  { name: "Imputation pipeline", tasks: [
+    { id: 9,  name: "Imputation pipeline (mice)", owner: "yifei", w: [3, 4] },
+    { id: 10, name: "Imputation convergence check (trace plots)", owner: "yifei", w: [3, 4] },
+  ]},
+  { name: "BI-SS group LASSO and ridge refit", tasks: [
+    { id: 11, name: "BI-SS small test runs", owner: "yifei", w: [4, 6] },
+    { id: 12, name: "Primary model: SSSQ", owner: "yifei", w: [4, 6] },
+    { id: 13, name: "Primary model: ODI", owner: "yifei", w: [4, 6] },
+    { id: 14, name: "Primary model: GRC", owner: "yifei", w: [4, 6] },
+  ]},
+  { name: "Internal validation and performance", tasks: [
+    { id: 15, name: "Internal validation performance (95% CI)", owner: "kevin", w: [7, 9] },
+    { id: 16, name: "Bootstrap optimism correction (200 replicates)", owner: "kevin", w: [7, 9] },
+  ]},
+  { name: "Sensitivity analyses, tables, figures", tasks: [
+    { id: 17, name: "Sensitivity analyses", owner: "kevin", w: [9, 10] },
+    { id: 18, name: "Final tables and figures", owner: "all", w: [9, 10] },
+  ]},
+  { name: "Report writing and revision", tasks: [
+    { id: 19, name: "Draft report", owner: "all", w: [10, 11] },
+    { id: 20, name: "Final report", owner: "all", w: [11, 12] },
+    { id: 21, name: "TRIPOD+AI checklist", owner: "all", w: [12, 12] },
+    { id: 22, name: "Code and session information archive", owner: "all", w: [12, 12] },
+    { id: 23, name: "Lessons-learned meeting", owner: "all", w: [12, 12] },
+  ]},
+];
+
+const DELIVERABLES = [
+  { no: "D1", name: "SAP approved, data accessed, repository set up", week: 1, tasks: [1, 2, 3] },
+  { no: "D2", name: "Analysis dataset, Table 1, Table 2, missingness summary", week: 3, tasks: [5, 6, 7, 8] },
+  { no: "D3", name: "Imputation pipeline and primary models for all three outcomes", week: 6, tasks: [9, 10, 11, 12, 13, 14] },
+  { no: "D4", name: "Internal validation and performance results", week: 9, tasks: [15, 16] },
+  { no: "D5", name: "Sensitivity analyses, final tables and figures", week: 10, tasks: [17, 18] },
+  { no: "D6", name: "Draft report", week: 11, tasks: [19] },
+  { no: "D7", name: "Final report, code archive and TRIPOD+AI checklist", week: 12, tasks: [20, 21, 22] },
+];
+
+const RACI = [
+  ["Data preparation and descriptive analyses", "R", "C", "I"],
+  ["Imputation and primary model", "C", "R", "C"],
+  ["Internal validation and performance", "C", "C", "R"],
+  ["Sensitivity analyses", "I", "C", "R"],
+  ["Tables, figures and report", "R", "R", "R"],
+];
+
+/* ---------- Helpers ---------- */
+const ST_LABEL = { "done": "Done", "in-progress": "In progress", "not-started": "Not started", "": "Not reported" };
+const ST_ICON  = { "done": "✓", "in-progress": "", "not-started": "", "": "?" };
+const norm = s => (s in ST_LABEL ? s : "");
+const st = id => norm(STATUS[id] || "");
+const stClass = s => s ? "s-" + s : "s-none";
+const statusChip = s => `<span class="status ${stClass(s)}"><span class="ic">${ST_ICON[s]}</span>${ST_LABEL[s]}</span>`;
+const ownerChip = o => `<span class="owner o-${o}"><span class="dot"></span>${OWNERS[o]}</span>`;
+const weeksText = w => w[0] === w[1] ? `Week ${w[0]}` : `Weeks ${w[0]}–${w[1]}`;
+const ALL_TASKS = GROUPS.flatMap(g => g.tasks);
+function taskStatus(t) {
+  const s = st(t.id);
+  let chip = statusChip(s);
+  if (s === "done" && DONE_WEEK[t.id]) chip = chip.replace("Done", `Done (week ${DONE_WEEK[t.id]})`);
+  return chip;
+}
+
+function combined(ids) {
+  const ss = ids.map(st);
+  if (ss.every(s => s === "done")) return "done";
+  if (ss.some(s => s === "done" || s === "in-progress")) return "in-progress";
+  if (ss.some(s => s === "")) return "";
+  return "not-started";
+}
+
+/* ---------- Header ---------- */
+document.getElementById("lastUpdated").textContent = LAST_UPDATED;
+document.getElementById("curWeek").textContent = CURRENT_WEEK ? `Week ${CURRENT_WEEK} of 12` : "Not set";
+
+/* ---------- Summary ---------- */
+(function () {
+  const counts = { "done": 0, "in-progress": 0, "not-started": 0, "": 0 };
+  ALL_TASKS.forEach(t => counts[st(t.id)]++);
+  const total = ALL_TASKS.length;
+  const notice = document.getElementById("notice");
+  if (counts[""] === total) {
+    notice.hidden = false;
+    notice.textContent = "No task status has been reported yet. Fill in the STATUS block at the top of this file to show progress.";
+  } else if (counts[""] > 0) {
+    notice.hidden = false;
+    notice.textContent = `${counts[""]} of ${total} tasks have no reported status yet.`;
+  }
+  const tiles = [
+    ["Tasks done", `${counts["done"]} / ${total}`, "done"],
+    ["In progress", counts["in-progress"], "in-progress"],
+    ["Not started", counts["not-started"], "not-started"],
+    ["Not reported", counts[""], ""],
+  ];
+  document.getElementById("tiles").innerHTML = tiles.map(([l, v, s]) =>
+    `<div class="tile"><div class="lbl">${statusChip(s).replace(ST_LABEL[s], l)}</div><div class="val">${v}</div></div>`
+  ).join("");
+
+  const rows = ["aaron", "yifei", "kevin", "all"].map(o => {
+    const ts = ALL_TASKS.filter(t => t.owner === o);
+    const d = ts.filter(t => st(t.id) === "done").length;
+    const p = ts.filter(t => st(t.id) === "in-progress").length;
+    const n = ts.length;
+    return `<div class="bo-row o-${o}">${ownerChip(o)}
+      <div class="bo-track">${d ? `<div class="bo-fill done" style="width:${d / n * 100}%"></div>` : ""}${p ? `<div class="bo-fill prog" style="width:${p / n * 100}%"></div>` : ""}</div>
+      <div class="cnt">${d} of ${n} done${p ? `, ${p} in progress` : ""}</div></div>`;
+  });
+  document.getElementById("ownerBars").innerHTML = rows.join("");
+})();
+
+/* ---------- RACI ---------- */
+document.getElementById("raciBody").innerHTML = RACI.map(([wp, a, y, k]) =>
+  `<tr><td>${wp}</td>${[["aaron", a], ["yifei", y], ["kevin", k]].map(([o, v]) =>
+    `<td class="cell o-${o}"><span class="raci-chip raci-${v}">${v}</span></td>`).join("")}</tr>`
+).join("");
+
+/* ---------- Deliverables ---------- */
+document.getElementById("delivBody").innerHTML = DELIVERABLES.map(d =>
+  `<tr><td><b>${d.no}</b></td><td>${d.name}</td><td>${statusChip(combined(d.tasks))}</td></tr>`
+).join("");
+
+/* ---------- Gantt ---------- */
+(function () {
+  const COL0 = 5; // first week column (after #, task, owner, status)
+  const g = document.getElementById("gantt");
+  let html = `<div class="g-row g-head"><div class="lab">#</div><div class="lab">Task</div><div class="lab">Owner</div><div class="lab">Status</div>`;
+  for (let w = 1; w <= 12; w++) {
+    html += `<div class="wk${CURRENT_WEEK === w ? " g-today-lbl" : ""}" style="grid-column:${COL0 + w - 1}">${w}</div>`;
+  }
+  html += `</div>`;
+
+  GROUPS.forEach(grp => {
+    html += `<div class="g-row g-group"><div>${grp.name}</div></div>`;
+    grp.tasks.forEach(t => {
+      const s = st(t.id);
+      let cells = "";
+      for (let w = 1; w <= 12; w++) cells += `<div class="g-cell" style="grid-column:${COL0 + w - 1}"></div>`;
+      const today = CURRENT_WEEK ? `<div class="g-today" style="grid-column:${COL0 + CURRENT_WEEK - 1}"></div>` : "";
+      html += `<div class="g-row g-task o-${t.owner}">
+        <div class="lab idx" style="grid-row:1">${t.id}</div>
+        <div class="lab" style="grid-row:1">${t.name}</div>
+        <div class="lab" style="grid-row:1">${ownerChip(t.owner)}</div>
+        <div class="lab" style="grid-row:1">${taskStatus(t)}</div>
+        ${cells}
+        <div class="g-bar ${s ? "st-" + s : ""}" style="grid-column:${COL0 + t.w[0] - 1} / ${COL0 + t.w[1]}"
+             data-id="${t.id}" tabindex="0" aria-label="${t.name}, ${OWNERS[t.owner]}, ${weeksText(t.w)}, ${ST_LABEL[s]}">${s === "done" ? "✓" : ""}</div>
+        ${today}
+      </div>`;
+    });
+  });
+  g.innerHTML = html;
+
+  /* Tooltip */
+  const tip = document.getElementById("tip");
+  const byId = Object.fromEntries(ALL_TASKS.map(t => [t.id, t]));
+  function show(el, x, y) {
+    const t = byId[el.dataset.id];
+    tip.innerHTML = `<b>${t.id}. ${t.name}</b>${OWNERS[t.owner]} · planned ${weeksText(t.w).toLowerCase()}<br>${taskStatus(t)}`;
+    tip.style.opacity = 1;
+    const r = tip.getBoundingClientRect();
+    let left = x + 14, top = y + 14;
+    if (left + r.width > innerWidth - 8) left = x - r.width - 14;
+    if (top + r.height > innerHeight - 8) top = y - r.height - 14;
+    tip.style.left = left + "px"; tip.style.top = top + "px";
+  }
+  g.addEventListener("mousemove", e => {
+    const el = e.target.closest(".g-bar");
+    if (el) show(el, e.clientX, e.clientY); else tip.style.opacity = 0;
+  });
+  g.addEventListener("mouseleave", () => tip.style.opacity = 0);
+  g.addEventListener("focusin", e => {
+    const el = e.target.closest(".g-bar");
+    if (el) { const r = el.getBoundingClientRect(); show(el, r.right, r.top); }
+  });
+  g.addEventListener("focusout", () => tip.style.opacity = 0);
+})();
+</script>
+</body>
+</html>
